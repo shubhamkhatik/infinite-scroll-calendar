@@ -1,7 +1,8 @@
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import CalendarMonth from "./CalendarMonth";
 import { addMonths } from "date-fns";
 import useVisibleMonth from "../../hooks/useVisibleMonth";
+import MonthHeader from "../Header/MonthHeader";
 
 const MONTH_BUFFER = 6; // Render 6 months before/after of visible month
 
@@ -13,19 +14,26 @@ export default function CalendarContainer() {
     { length: 2 * MONTH_BUFFER + 1 },
     (_, i) => i - MONTH_BUFFER
   );
+  const monthRefs = useRef<HTMLDivElement[]>([]);
+ const monthData = months.map((offset, idx) => ({
+  month: addMonths(currentDate, offset),
+  ref: { current: monthRefs.current[idx] } as React.RefObject<HTMLDivElement>,
+}));
 
-  const monthRefs = months.map((offset) => ({
-    month: addMonths(currentDate, offset),
-    ref: useRef<HTMLDivElement>(null),
-  }));
-
-  const visibleMonth = useVisibleMonth(monthRefs);
+  const visibleMonth = useVisibleMonth(monthData);
 
   return (
     <div className="relative">
-      <div className="overflow-auto h-[calc(100vh-64px)] relative pt-7">
-        {monthRefs.map(({ month, ref }) => (
-          <CalendarMonth key={month.toISOString()} month={month} ref={ref} />
+      <MonthHeader month={visibleMonth || currentDate} />
+      <div className="overflow-auto h-[calc(100vh-64px)] relative p-10 mt-7">
+        {monthData.map(({month},idx) => (
+          <CalendarMonth
+            key={month.toISOString()}
+            month={month}
+            ref={(el) => {
+              if (el) monthRefs.current[idx] = el;
+            }}
+          />
         ))}
       </div>
     </div>

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 interface MonthRef {
   month: Date;
-  ref: React.RefObject<HTMLDivElement>;
+  ref: React.RefObject<HTMLDivElement | null>;
 }
 
 export default function useVisibleMonth(monthRefs: MonthRef[]): Date | null {
