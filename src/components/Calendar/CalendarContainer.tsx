@@ -14,11 +14,12 @@ export default function CalendarContainer() {
     { length: 2 * MONTH_BUFFER + 1 },
     (_, i) => i - MONTH_BUFFER
   );
+  // ref for each month div
   const monthRefs = useRef<HTMLDivElement[]>([]);
- const monthData = months.map((offset, idx) => ({
-  month: addMonths(currentDate, offset),
-  ref: { current: monthRefs.current[idx] } as React.RefObject<HTMLDivElement>,
-}));
+  const monthData = months.map((offset, idx) => ({
+    month: addMonths(currentDate, offset),
+    ref: { current: monthRefs.current[idx] } as React.RefObject<HTMLDivElement>,
+  }));
 
   const visibleMonth = useVisibleMonth(monthData);
 
@@ -26,13 +27,15 @@ export default function CalendarContainer() {
     <div className="relative">
       <MonthHeader month={visibleMonth || currentDate} />
       <div className="overflow-auto h-[calc(100vh-64px)] relative p-10 mt-7">
-        {monthData.map(({month},idx) => (
+        {monthData.map(({ month }, idx) => (
           <CalendarMonth
             key={month.toISOString()}
             month={month}
             ref={(el) => {
               if (el) monthRefs.current[idx] = el;
             }}
+            journalEntriesByDate={{}}
+            onEntryClick={() => {}}
           />
         ))}
       </div>
