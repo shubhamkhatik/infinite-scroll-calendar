@@ -6,3 +6,6 @@ export interface JournalEntry {
   date: string; 
   description: string;
 }
+export interface JournalEntryWithID extends JournalEntry {
+  id: string; 
+}

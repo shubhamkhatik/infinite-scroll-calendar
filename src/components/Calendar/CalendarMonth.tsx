@@ -1,7 +1,7 @@
 import { generateMonthGrid } from "../../utils/dateUtils";
 import type { JournalEntry } from "../../utils/types";
 import { format } from "date-fns";
-
+import CalendarDay from "./CalendarDay";
 
 interface Props {
   month: Date;
@@ -28,26 +28,11 @@ export default function CalendarMonth({
           const dateStringKey = format(date, "dd/MM/yyyy");
           const journalEntryOfDate = journalEntriesByDate[dateStringKey] || [];
           return (
-            <div
-              key={date.toISOString()}
-              className="aspect-square flex items-center justify-center border rounded"
-            >
-              <div>{date.getDate()}</div>
-
-              <div className="flex flex-wrap gap-1 mt-1">
-                {journalEntryOfDate.map((entry, idx) => (
-                  <img
-                    key={idx}
-                    src={entry.imgUrl}
-                    alt={entry.description}
-                    className="w-6 h-6 rounded cursor-pointer"
-                    onClick={() =>
-                      onEntryClick(idx)
-                    }
-                  />
-                ))}
-              </div>
-            </div>
+            <CalendarDay
+              date={date}
+              entries={journalEntryOfDate}
+              onEntryClick={(entryIdx) => onEntryClick(entryIdx)}
+            />
           );
         })}
       </div>
