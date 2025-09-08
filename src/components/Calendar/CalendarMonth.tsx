@@ -1,13 +1,13 @@
 import { generateMonthGrid } from "../../utils/dateUtils";
-import type { JournalEntry } from "../../utils/types";
+import type { JournalEntryWithID } from "../../utils/types";
 import { format } from "date-fns";
 import CalendarDay from "./CalendarDay";
 
 interface Props {
   month: Date;
   ref: React.Ref<HTMLDivElement>;
-  journalEntriesByDate: Record<string, JournalEntry[]>;
-  onEntryClick: (entryIndex: number) => void;
+  journalEntriesByDate: Record<string, JournalEntryWithID[]>;
+  onEntryClick: (entries: JournalEntryWithID[], entryIndex: number) => void;
 }
 
 export default function CalendarMonth({
@@ -31,7 +31,10 @@ export default function CalendarMonth({
             <CalendarDay
               date={date}
               entries={journalEntryOfDate}
-              onEntryClick={(entryIdx) => onEntryClick(entryIdx)}
+              onEntryClick={(idx) =>
+                journalEntryOfDate.length &&
+                onEntryClick(journalEntryOfDate, idx)
+              }
             />
           );
         })}

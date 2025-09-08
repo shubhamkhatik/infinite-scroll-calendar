@@ -6,12 +6,16 @@ import MonthHeader from "../Header/MonthHeader";
 import sampleData from "../../utils/sampleData.json";
 import type { JournalEntry, JournalEntryWithID } from "../../utils/types";
 import { JournalEntriesByDate } from "../../utils/JournalEntriesByDate";
+import { EmblaCarousel } from "../EmblaCarousel";
 
 const MONTH_BUFFER = 6; // Render 6 months before/after of visible month
 
 export default function CalendarContainer() {
   const [currentDate] = useState(new Date());
-  
+  const [viewerEntries, setViewerEntries] = useState<
+    JournalEntryWithID[] | null
+  >(null);
+  const [entriesIdx, setEntriesIdx] = useState(0);
 
   // [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6]
   const months = useMemo(
@@ -28,8 +32,15 @@ export default function CalendarContainer() {
 
   const visibleMonth = useVisibleMonth(monthData);
   const [entries] = useState<JournalEntry[]>(sampleData);
-  const perDateEntries = useMemo(()=> JournalEntriesByDate(entries || []),[entries])
+  const perDateEntries = useMemo(
+    () => JournalEntriesByDate(entries || []),
+    [entries]
+  );
 
+  function handleDayEntryClick(entries: JournalEntryWithID[], idx: number) {
+    setViewerEntries(entries);
+    setEntriesIdx(idx);
+  }
   return (
     <div className="relative">
       <MonthHeader month={visibleMonth || currentDate} />
@@ -41,11 +52,18 @@ export default function CalendarContainer() {
             ref={(el) => {
               if (el) monthRefs.current[idx] = el;
             }}
-            journalEntriesByDate={{}}
-            onEntryClick={() => {}}
+            journalEntriesByDate={perDateEntries}
+            onEntryClick={handleDayEntryClick}
           />
         ))}
       </div>
+      {viewerEntries && (
+        <EmblaCarousel
+          entries={viewerEntries}
+          startIndex={entriesIdx}
+          onClose={() => setViewerEntries(null)}
+        />
+      )}
     </div>
   );
 }
