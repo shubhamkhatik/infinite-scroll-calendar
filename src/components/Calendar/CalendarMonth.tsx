@@ -15,7 +15,7 @@ const CalendarMonth = React.forwardRef<HTMLDivElement, Props>(
     const days = generateMonthGrid(month);
 
     return (
-      <div className="mb-8 border-b pb-4" ref={ref}>
+      <div className="m-5 border-b pb-4" ref={ref}>
         <div className="text-lg font-bold mb-2">
           {month.toLocaleString("default", { month: "long", year: "numeric" })}
         </div>
