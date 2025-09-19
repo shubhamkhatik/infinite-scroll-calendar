@@ -7,15 +7,22 @@ import sampleData from "../../utils/sampleData.json";
 import type { JournalEntry, JournalEntryWithID } from "../../utils/types";
 import { JournalEntriesByDate } from "../../utils/JournalEntriesByDate";
 import { EmblaCarousel } from "../EmblaCarousel";
+import SearchBar from "../Search/SearchBar";
+import { useKeyboardNavigation } from "../../hooks/useKeyboardNavigation";
 
 const MONTH_BUFFER = 6; // Render 6 months before/after of visible month
 
 export default function CalendarContainer() {
-  const [currentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [viewerEntries, setViewerEntries] = useState<
     JournalEntryWithID[] | null
   >(null);
   const [entriesIdx, setEntriesIdx] = useState(0);
+  const [showSearch, setShowSearch] = useState(false);
+
+  const [filteredEntries, setFilteredEntries] = useState<
+    JournalEntryWithID[] | null
+  >(null);
 
   // [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6]
   const months = useMemo(
@@ -31,20 +38,66 @@ export default function CalendarContainer() {
   }));
 
   const visibleMonth = useVisibleMonth(monthData);
+  console.log("Visible month:", visibleMonth);
   const [entries] = useState<JournalEntry[]>(sampleData);
+  const displayEntries = filteredEntries || entries;
   const perDateEntries = useMemo(
-    () => JournalEntriesByDate(entries || []),
-    [entries]
+    () => JournalEntriesByDate(displayEntries || []),
+    [displayEntries]
   );
+  const scrollToMonth = (targetDate: Date) => {
+    setCurrentDate(targetDate);
+    setTimeout(() => {
+      const targetMonthIndex = months.findIndex((offset) => {
+        const monthDate = addMonths(currentDate, offset);
+        return (
+          monthDate.getFullYear() === targetDate.getFullYear() &&
+          monthDate.getMonth() === targetDate.getMonth()
+        );
+      });
 
+      if (targetMonthIndex !== -1 && monthRefs.current[targetMonthIndex]) {
+        monthRefs.current[targetMonthIndex].scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    }, 100);
+  };
+  useKeyboardNavigation({
+    onNextMonth: () => scrollToMonth(addMonths(currentDate, 1)),
+    onPrevMonth: () => scrollToMonth(addMonths(currentDate, -1)),
+    onNextYear: () => scrollToMonth(addMonths(currentDate, 12)),
+    onPrevYear: () => scrollToMonth(addMonths(currentDate, -12)),
+  });
   function handleDayEntryClick(entries: JournalEntryWithID[], idx: number) {
     setViewerEntries(entries);
     setEntriesIdx(idx);
   }
   return (
     <div className="relative">
-      <MonthHeader month={visibleMonth || currentDate} />
-      <div className="overflow-auto h-[calc(100vh-64px)] relative p-10 mt-7">
+      <MonthHeader month={visibleMonth} />
+      <button
+        onClick={() => setShowSearch(!showSearch)}
+        className="fixed top-16 right-4 z-40 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600 transition-colors"
+      >
+        🔍
+      </button>
+      {showSearch && (
+        <SearchBar
+          entries={perDateEntries ? Object.values(perDateEntries).flat() : []}
+          onFilteredResults={setFilteredEntries}
+          onClearSearch={() => setFilteredEntries(null)}
+        />
+      )}
+      <div className="fixed bottom-4 left-4 bg-black bg-opacity-70 text-white text-xs p-2 rounded z-30">
+        ← → Navigate months | Ctrl+↑↓ Navigate years
+      </div>
+      <div
+        className={`overflow-auto h-[calc(100vh-64px)] relative ${
+          showSearch ? "pt-32" : "pt-7"
+        }`}
+      >
         {monthData.map(({ month }, idx) => (
           <CalendarMonth
             key={month.toISOString()}
