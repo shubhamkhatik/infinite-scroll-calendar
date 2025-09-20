@@ -10,6 +10,8 @@ export default function useVisibleMonth(
   initialMonth: Date
 ): Date {
   const [visibleMonth, setVisibleMonth] = useState<Date>(initialMonth);
+  // desktop  intersection behavior is inconsistent due to 2 rows visible at once
+    const isDesktop = window.innerWidth >= 1024;
 
   useEffect(() => {
     const ratios = new Map<Element, number>();
@@ -34,13 +36,13 @@ export default function useVisibleMonth(
           }
         });
 
-        if (mostVisibleMonth && maxRatio > 0.4) {
+        if (mostVisibleMonth && maxRatio > (isDesktop ? 0.2 : 0.4)) {
           setVisibleMonth(mostVisibleMonth);
         }
       },
       {
-        threshold: [0, 0.2, 0.5, 0.7, 1.0],
-        rootMargin: "-10% 0px -10% 0px", // Only trigger when month is well within viewport
+        threshold: [0, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0],
+        rootMargin: isDesktop ? '-5% 0px -5% 0px' : '-10% 0px -10% 0px'
       }
     );
 
